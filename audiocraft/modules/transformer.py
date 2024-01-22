@@ -20,7 +20,9 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 from torch.utils.checkpoint import checkpoint as torch_checkpoint
-from xformers import ops
+import os
+if not os.environ.get("IGNORE_MEMORY_EFFICIENT"):
+  from xformers import ops
 
 from .rope import RotaryEmbedding
 from .streaming import StreamingModule
@@ -171,6 +173,9 @@ class StreamingMultiheadAttention(StreamingModule):
         factory_kwargs = {'device': device, 'dtype': dtype}
         if past_context is not None:
             assert causal
+
+        if os.environ.get("IGNORE_MEMORY_EFFICIENT"):
+            memory_efficient = False
 
         self.embed_dim = embed_dim
         self.causal = causal
